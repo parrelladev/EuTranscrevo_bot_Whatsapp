@@ -47,7 +47,7 @@ cliente-bot/
 
 1. **Clone o repositório**
 ```bash
-git clone https://github.com/parrelladev/cliente-bot.git
+git clone https://github.com/parrelladev/EuTranscrevo_bot_Whatsapp.git
 cd cliente-bot
 ```
 
@@ -60,8 +60,6 @@ npm install
 Crie um arquivo `.env` na raiz:
 ```env
 REPLICATE_TOKEN=seu_token_aqui
-LOG_LEVEL=info
-NODE_ENV=development
 ```
 
 4. **Verifique o ffmpeg**
@@ -73,9 +71,6 @@ ffmpeg -version
 ```bash
 node main.js
 ```
-
-### 📋 Configuração Detalhada
-Veja [CONFIGURACAO_AMBIENTE.md](CONFIGURACAO_AMBIENTE.md) para instruções completas sobre configuração.
 
 ## 🔧 Configurações Avançadas
 
@@ -189,12 +184,6 @@ O bot utiliza emojis para facilitar a identificação de logs:
 📡 Enviando para o Replicate...  # API chamada
 ✅ Transcrição enviada           # Sucesso
 ```
-
-### Métricas Sugeridas
-- Tempo médio de transcrição
-- Taxa de sucesso
-- Uso de recursos (CPU/memória)
-- Erros por tipo
 
 ## 🐛 Solução de Problemas
 
