@@ -1,0 +1,48 @@
+#  ARQUIVOS SENSÍVEIS
+.env
+.env.local
+.env.development
+.env.production
+*.key
+*.pem
+secrets.json
+
+# 🔄 SESSÕES E DADOS TEMPORÁRIOS
+sessao-whatsapp/
+.wwebjs_auth/
+.wwebjs_cache/
+.wwebjs_data/
+temp/
+audio-transcribe/
+
+# 📦 DEPENDÊNCIAS
+node_modules/
+package-lock.json
+
+#  DESENVOLVIMENTO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# 📱 WHATSAPP ESPECÍFICO
+screenshots/
+*.png
+*.jpg
+*.jpeg
+
+# 🧪 TESTES E LOGS
+coverage/
+*.log
+logs/
+
+# ️ ARQUIVOS DE ÁUDIO
+*.mp3
+*.wav
+*.m4a
+*.ogg
+*.aac
+*.webm
+*.opus
+*.amr
+*.3gpp
