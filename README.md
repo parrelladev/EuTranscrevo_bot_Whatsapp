@@ -31,6 +31,7 @@ cliente-bot/
 ├── 📁 temp/              # Arquivos temporários
 ├── 📁 sessao-whatsapp/   # Sessão do WhatsApp (criada automaticamente)
 ├── main.js               # Arquivo principal do bot
+├── config.js             # Centraliza todas as configurações do projeto
 ├── package.json          # Dependências do projeto
 └── README.md            # Este arquivo
 ```
