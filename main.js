@@ -24,6 +24,7 @@ const config = require('./config');
 // Importa os módulos
 const transcrever = require('./commands/transcrever');
 const ping = require('./commands/ping');
+const boasVindas = require('./commands/boasVindas');
 
 
 /**
@@ -71,24 +72,31 @@ client.on('ready', () => {
  */
 client.on('message', async message => {
   try {
-    // 👇 Executa o comando de ping
+    // 👉 Verifica se é mídia de áudio ou voz
+    const isAudio =
+      message.hasMedia &&
+      (message.type === MessageTypes.VOICE || message.type === MessageTypes.AUDIO);
+
+    // 🎙️ Se for áudio, chama apenas o transcrever
+    if (isAudio) {
+      console.log('🎧 Áudio recebido!');
+      await transcrever(message, client);
+      return;
+    }
+
+    // 👋 Se não for áudio, envia mensagem de boas-vindas
+    await boasVindas(message, client);
+
+    // 🎯 Outros comandos, como !ping
     const handled = await ping(message, client);
     if (handled) return;
 
-    // 👇 Se não for o ping, segue o fluxo para áudios
-    if (
-      message.hasMedia &&
-      (message.type === MessageTypes.VOICE || message.type === MessageTypes.AUDIO)
-    ) {
-      console.log('🎧 Áudio recebido!');
-      await transcrever(message, client);
-    }
-
   } catch (err) {
     console.error('❌ Erro no processamento da mensagem:', err);
-    await client.sendMessage(message.from, config.messages.error);
+    await client.sendMessage(message.from, '⚠️ Ocorreu um erro inesperado. Tente novamente mais tarde.');
   }
 });
+
 
 // Inicializa o cliente WhatsApp
 client.initialize();
