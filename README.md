@@ -10,19 +10,21 @@ Bot inteligente para WhatsApp que transcreve mensagens de áudio automaticamente
 - **Otimização Inteligente**: Reduz tamanho do áudio antes do envio para economia
 - **Suporte Multi-idioma**: Detecta automaticamente o idioma do áudio
 - **Tratamento de Erros**: Sistema robusto de tratamento de falhas
+- **Validação de Segurança**: Verifica tipos de arquivo e tamanhos antes do processamento
 
 ### 📱 Comandos Disponíveis
 - `!ping` - Testa se o bot está funcionando
 - **Áudio/Voz** - Transcreve automaticamente qualquer mensagem de áudio
+- **Mensagens de Texto** - Envia mensagem de boas-vindas personalizada
 
 ## 🏗️ Arquitetura do Projeto
 
 ```
-cliente-bot/
+EuTranscrevo_bot_Whatsapp/
 ├── 📁 commands/           # Comandos do bot
 │   ├── transcrever.js     # Processamento principal de áudio
-│   ├── ajuda.js          # Comando de ajuda
-│   └── sugestoes.js      # Sugestões de conteúdo
+│   ├── ping.js           # Comando de teste de funcionamento
+│   └── boasVindas.js     # Mensagem de boas-vindas personalizada
 ├── 📁 services/          # Serviços externos
 │   ├── audioOptimizer.js # Otimização com ffmpeg
 │   └── replicateClient.js # Integração com API Replicate
@@ -49,7 +51,7 @@ cliente-bot/
 1. **Clone o repositório**
 ```bash
 git clone https://github.com/parrelladev/EuTranscrevo_bot_Whatsapp.git
-cd cliente-bot
+cd EuTranscrevo_bot_Whatsapp
 ```
 
 2. **Instale as dependências**
@@ -135,8 +137,9 @@ Para alterar configurações:
 1. Crie um arquivo em `commands/`
 ```javascript
 // commands/novoComando.js
-module.exports = function novoComando(message) {
-  message.reply('Resposta do novo comando!');
+module.exports = async function novoComando(message, client) {
+  await client.sendMessage(message.from, 'Resposta do novo comando!');
+  return true; // indica que o comando foi tratado
 };
 ```
 
@@ -145,9 +148,8 @@ module.exports = function novoComando(message) {
 const novoComando = require('./commands/novoComando');
 
 // No evento de mensagem
-if (message.body === '!novo') {
-  return novoComando(message);
-}
+const handled = await novoComando(message, client);
+if (handled) return;
 ```
 
 ### Estrutura de Logs
@@ -167,6 +169,21 @@ O bot utiliza emojis para facilitar a identificação de logs:
 - Limpeza automática de arquivos temporários
 - Tratamento de erros robusto
 - Timeout para operações de rede
+- Validação de tamanho de arquivo (máximo 50MB)
+- Verificação de tipos MIME permitidos
+
+### Tipos de Áudio Suportados
+- `audio/mp3`
+- `audio/wav`
+- `audio/m4a`
+- `audio/ogg`
+- `audio/aac`
+- `audio/webm`
+- `audio/opus`
+- `audio/amr`
+- `audio/3gpp`
+- `audio/mpeg`
+- `audio/mp4`
 
 ### Boas Práticas
 - Tokens em variáveis de ambiente
@@ -186,6 +203,15 @@ O bot utiliza emojis para facilitar a identificação de logs:
 ✅ Transcrição enviada           # Sucesso
 ```
 
+### Fluxo de Processamento
+1. **Recebimento**: Bot detecta mensagem de áudio
+2. **Validação**: Verifica tipo e tamanho do arquivo
+3. **Download**: Baixa o áudio da mensagem
+4. **Otimização**: Reduz tamanho com ffmpeg
+5. **Transcrição**: Envia para API Replicate
+6. **Resposta**: Envia transcrição como resposta
+7. **Limpeza**: Remove arquivos temporários
+
 ## 🐛 Solução de Problemas
 
 ### Problemas Comuns
@@ -199,16 +225,44 @@ O bot utiliza emojis para facilitar a identificação de logs:
 - Confirme se o ffmpeg está instalado
 - Verifique a conexão com a internet
 
-**Áudio não processado**
-- Confirme se é um arquivo de áudio válido
-- Verifique permissões de escrita no diretório temp
+**Erro de validação de arquivo**
+- Verifique se o arquivo é realmente um áudio
+- Confirme se o tamanho não excede 50MB
+- Verifique se o tipo MIME está na lista permitida
 
-### Debug
-Ative logs detalhados adicionando:
-```javascript
-console.log('DEBUG:', { message, media, fileType });
-```
+**Erro de otimização de áudio**
+- Verifique se o ffmpeg está instalado e no PATH
+- Confirme se há espaço suficiente no disco
+- Verifique as permissões de escrita no diretório temp
+
+## 📦 Dependências
+
+### Principais
+- `whatsapp-web.js` - Cliente WhatsApp Web
+- `axios` - Cliente HTTP para APIs
+- `file-type` - Detecção de tipos de arquivo
+- `qrcode-terminal` - Geração de QR Code no terminal
+- `dotenv` - Gerenciamento de variáveis de ambiente
+
+### Desenvolvimento
+- `node-cron` - Agendamento de tarefas (para limpeza automática)
+
+## 🤝 Contribuição
+
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
 
 ## 📄 Licença
 
-Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+Este projeto está sob a licença ISC. Veja o arquivo `LICENSE` para mais detalhes.
+
+## 👨‍💻 Autor
+
+**parrelladev** - [GitHub](https://github.com/parrelladev)
+
+---
+
+⭐ Se este projeto te ajudou, considere dar uma estrela no repositório!
