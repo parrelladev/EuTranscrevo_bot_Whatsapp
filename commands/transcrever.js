@@ -1,6 +1,6 @@
 /**
  * 📝 MÓDULO DE TRANSCRIÇÃO DE ÁUDIO
- * 
+ *
  * Este módulo processa mensagens de áudio do WhatsApp:
  * 1. Baixa o áudio da mensagem
  * 2. Salva temporariamente no sistema
@@ -8,7 +8,7 @@
  * 4. Envia para transcrição via API Replicate
  * 5. Retorna a transcrição como resposta
  * 6. Limpa arquivos temporários
- * 
+ *
  * @author parrelladev
  * @version 1.0.0
  */
@@ -21,13 +21,13 @@ const config = require('../config');
 // Importa os serviços necessários
 const { optimizeAudio } = require('../services/audioOptimizer');
 const { transcribeAudio } = require('../services/replicateClient');
-const { fileTypeFromFile } = require('file-type'); // Para verificar se é realmente um arquivo de áudio
+const fileType = require('file-type'); // Compatível com versão 16.x
 
 /**
  * Função principal de transcrição
- * 
+ *
  * Processa uma mensagem de áudio do WhatsApp e retorna sua transcrição
- * 
+ *
  * @param {Object} message - Objeto da mensagem do WhatsApp
  * @param {Object} client - Cliente WhatsApp para enviar respostas
  * @returns {Promise<void>}
@@ -53,38 +53,43 @@ module.exports = async function transcrever(message, client) {
 
     // Gera nomes únicos para os arquivos de áudio
     const baseName = `${Date.now()}`;
-    const originalPath = path.join(tempDir, `${baseName}_original.${config.audio.optimization.format}`);
-    const optimizedPath = path.join(tempDir, `${baseName}_optimized.${config.audio.optimization.format}`);
+    const originalPath = path.join(
+      tempDir,
+      `${baseName}_original.${config.audio.optimization.format}`
+    );
+    const optimizedPath = path.join(
+      tempDir,
+      `${baseName}_optimized.${config.audio.optimization.format}`
+    );
 
     // Salva o áudio original no disco
     fs.writeFileSync(originalPath, Buffer.from(media.data, 'base64'));
     console.log('📥 Áudio salvo:', originalPath);
 
     // Verifica se o arquivo é realmente um áudio válido
-    // Isso previne processamento de arquivos maliciosos
-    const fileType = await fileTypeFromFile(originalPath);
+    const fileTypeResult = await fileType.fromFile(originalPath);
 
     // Logs de debug para entender o tipo de arquivo
-    console.log('🔍 Tipo de arquivo detectado:', fileType);
+    console.log('🔍 Tipo de arquivo detectado:', fileTypeResult);
     console.log('📋 Tipos permitidos:', config.security.allowedAudioTypes);
 
-    // Pular validação se configurado para debug
+    // Validação do tipo de arquivo (a menos que esteja desativada)
     if (config.development.skipFileTypeValidation) {
       console.log('⚠️ Validação de tipo de arquivo desabilitada (modo debug)');
     } else {
-      if (!fileType) {
+      if (!fileTypeResult) {
         console.log('❌ Nenhum tipo de arquivo detectado');
         fs.unlinkSync(originalPath);
         return message.reply(config.messages.invalidFile);
       }
 
-      if (!config.security.allowedAudioTypes.includes(fileType.mime)) {
-        console.log(`❌ Tipo de arquivo não permitido: ${fileType.mime}`);
+      if (!config.security.allowedAudioTypes.includes(fileTypeResult.mime)) {
+        console.log(`❌ Tipo de arquivo não permitido: ${fileTypeResult.mime}`);
         fs.unlinkSync(originalPath);
         return message.reply(config.messages.invalidFile);
       }
 
-      console.log(`✅ Tipo de arquivo válido: ${fileType.mime}`);
+      console.log(`✅ Tipo de arquivo válido: ${fileTypeResult.mime}`);
     }
 
     // Verifica o tamanho do arquivo
@@ -110,10 +115,9 @@ module.exports = async function transcrever(message, client) {
     await message.reply(`${transcript.trim()}`);
     console.log(`✅ Transcrição enviada:\n${transcript}`);
 
-    // Limpa os arquivos temporários para economizar espaço
+    // Limpa os arquivos temporários
     fs.unlinkSync(originalPath);
     fs.unlinkSync(optimizedPath);
-
   } catch (err) {
     console.error('❌ Erro ao processar áudio:', err);
     await message.react('❌');
